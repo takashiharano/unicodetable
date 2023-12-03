@@ -72,7 +72,7 @@ button:disabled, input[type="button"]:disabled, input[type="submit"]:disabled {
 }
 
 .small-button {
-  height: 12px;
+  height: 14px;
   font-size: 11px;
 }
 
@@ -153,6 +153,12 @@ td.unicode-body {
   font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
 }
 
+.codeblobk-btn {
+  min-width: 64px;
+  font-size: 12px;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+}
+
 .btn-half {
   min-width: 32px;
 };
@@ -164,7 +170,7 @@ td.unicode-body {
 
 #content {
   position: relative;
-  width: 1180px;
+  width: 1336px;
   margin: auto;
 }
 
@@ -802,7 +808,9 @@ unicode.getUTF8byteSeq = function(b) {
   var len = b.length;
   var s = '';
   for (var i = 0; i < len; i++) {
-    s += '%';
+    if (i > 0) {
+      s += ' ';
+    }
     s += util.toHex(b[i], true, 2);
   }
   s += ' (' + len + util.plural('byte', len) + ')';
@@ -950,16 +958,17 @@ $onMouseDown = function(e) {
 <h1>Unicode Table</h1>
 
 <div style="display:inline-block;position:relative;left:20px;">
-  <span style="margin-left:4px;">
-  <input type="checkbox" id="chk-tooltip"><label for="chk-tooltip">Tooltip</label>
-  </span>
+<button id="auto-btn" class="small-button" onclick="unicode.startStopAuto();"style="margin-left:4px;">AUTO SCROLL</button>
+<button id="auto-seq-btn" class="small-button" onclick="unicode.startStopAutoSeq();"style="margin-left:4px;">AUTO SEQ</button>
 
-<button id="auto-btn" onclick="unicode.startStopAuto();"style="margin-left:4px;">AUTO SCROLL</button>
-<button id="auto-seq-btn" onclick="unicode.startStopAutoSeq();"style="margin-left:4px;">AUTO SEQ</button>
+<span style="margin-left:4px;">
+<button class="small-button" onclick="unicode.copyURL();">Copy URL</button>
+</span>
 
-  <span style="margin-left:4px;">
-  <button onclick="unicode.copyURL();">Copy URL</button>
-  </span>
+<span style="margin-left:4px;">
+<input type="checkbox" id="chk-tooltip"><label for="chk-tooltip">Tooltip</label>
+</span>
+
 </div>
 </div>
 
@@ -970,7 +979,7 @@ $onMouseDown = function(e) {
 Char:<input type="text" id="target-char" style="width:50px;"><button class="small-button" onclick="unicode.searchChar($el('#target-char').value);" style="margin-left:2px;">SHOW</button>
 </span>
 
-<span style="margin-left:10px;">
+<span style="margin-left:32px;">
 U+<input type="text" id="target-point" style="width:50px;"><button class="small-button" onclick="unicode.searchPoint($el('#target-point').value, 16);" style="margin-left:2px;">SHOW</button>
 </span>
 
@@ -978,15 +987,15 @@ U+<input type="text" id="target-point" style="width:50px;"><button class="small-
 U+<span style="font-size:0.7em;">(10)</span><input type="text" id="target-point10" style="width:50px;"><button class="small-button" onclick="unicode.searchPoint($el('#target-point10').value, 10);" style="margin-left:2px;">SHOW</button>
 </span>
 
-<span style="margin-left:10px;">
+<span style="margin-left:40px;">
 Rows:<input type="text" id="rows" style="width:50px;" value="16"><button class="small-button" onclick="unicode.setRows($el('#rows').value);" style="margin-left:2px;">SHOW</button>
 </span>
 
 <div style="display:inline-block;position:absolute;right:0;">
-  <button onclick="unicode.showTable(unicode.prevPgPoint);" class="move-btn btn-half" id="prev-pg-btn">↑↑</button>
-  <button onclick="unicode.showTable(unicode.prevRowPoint);" class="move-btn btn-half" id="prev-row-btn" style="margin-left:2px;">↑</button>
-  <button onclick="unicode.showTable(unicode.nextRowPoint);" class="move-btn btn-half" id="next-row-btn">↓</button>
-  <button onclick="unicode.showTable(unicode.nextPgPoint);" class="move-btn btn-half" id="next-pg-btn" style="margin-left:4px;">↓↓</button>
+  <button onclick="unicode.showTable(unicode.prevPgPoint);" class="move-btn btn-half" id="prev-pg-btn">&#x2191;&#x2191;</button>
+  <button onclick="unicode.showTable(unicode.prevRowPoint);" class="move-btn btn-half" id="prev-row-btn" style="margin-left:2px;">&#x2191;</button>
+  <button onclick="unicode.showTable(unicode.nextRowPoint);" class="move-btn btn-half" id="next-row-btn">&#x2193;</button>
+  <button onclick="unicode.showTable(unicode.nextPgPoint);" class="move-btn btn-half" id="next-pg-btn" style="margin-left:4px;">&#x2193;&#x2193;</button>
 </div>
 </div><br>
 
@@ -1002,7 +1011,7 @@ Rows:<input type="text" id="rows" style="width:50px;" value="16"><button class="
       <textarea id="text" spellcheck="false"></textarea>
     </div>
   </div>
-  <div style="display:inline-block;width:calc(100% - 900px);">
+  <div style="display:inline-block;width:320px;">
     <div id="code-info">
     <pre style="width:100%;height:100%;">
 <span id="codepoint"></span>
@@ -1010,40 +1019,47 @@ Rows:<input type="text" id="rows" style="width:50px;" value="16"><button class="
 <span id="point-val"></span>
 </pre>
   </div>
-  <div style="display:inline-block;margin-top:4px;line-height:1.3em;">
-    <span id="led-bmp"></span><button onclick="unicode.showTable(0);" class="move-btn" data-tooltip="Basic Multilingual Plane">U+0000(BMP)</button><br>
-    <div style="margin-left:12px;line-height:1.3em;">
-      <span id="led-u0000"></span><button onclick="unicode.showTable(0x0000);" class="move-btn">U+0000</button>ASCII<br>
-      <span id="led-u0080"></span><button onclick="unicode.showTable(0x0080);" class="move-btn">U+0080</button>Latin-1 Supplement<br>
-      <span id="led-u0400"></span><button onclick="unicode.showTable(0x0400);" class="move-btn">U+0400</button>Кириллица<br>
-      <span id="led-u0600"></span><button onclick="unicode.showTable(0x0600);" class="move-btn">U+0600</button>عربی حروف تہجی<br>
-      <span id="led-u0e00"></span><button onclick="unicode.showTable(0x0E00);" class="move-btn">U+0E00</button>อักษรไทย<br>
-      <span id="led-u2000"></span><button onclick="unicode.showTable(0x2000);" class="move-btn">U+2000</button>Symbols<br>
-      <span id="led-u3040"></span><button onclick="unicode.showTable(0x3040);" class="move-btn">U+3040</button>ひらがな/カタカナ<br>
-      <span id="led-u3100"></span><button onclick="unicode.showTable(0x3100);" class="move-btn">U+3100</button>ㄅㄆㄇㄈ<br>
-      <span id="led-u3400"></span><button onclick="unicode.showTable(0x3400);" class="move-btn">U+3400</button>CJK統合漢字<br>
-      <span id="led-uac00"></span><button onclick="unicode.showTable(0xAC00);" class="move-btn">U+AC00</button>한글<br>
-      <span id="led-ud800"></span><button onclick="unicode.showTable(0xD800);" class="move-btn">U+D800</button>Surrogates<br>
-      <span id="led-ue000"></span><button onclick="unicode.showTable(0xE000);" class="move-btn">U+E000</button>Private Use Area<br>
-      <span id="led-uf900"></span><button onclick="unicode.showTable(0xF900);" class="move-btn">U+F900</button>CJK互換漢字<br>
-      <span id="led-ufe00"></span><button onclick="unicode.showTable(0xFE00);" class="move-btn">U+FE00</button>Variation Selectors<br>
-      <span id="led-uff00"></span><button onclick="unicode.showTable(0xFF00);" class="move-btn">U+FF00</button>Fullwidth Forms<br>
-      <span id="led-uff60"></span><button onclick="unicode.showTable(0xFF60);" class="move-btn">U+FF60</button>半角ｶﾅ<br>
-    </div>
-    <span id="led-smp"></span><button onclick="unicode.showTable(0x10000);" class="move-btn" data-tooltip="Supplementary Multilingual Plane">U+10000(SMP)</button><br>
-    <div style="margin-left:12px;line-height:1.3em;">
-      <span id="led-u1f300"></span><button onclick="unicode.showTable(0x1F300);" class="move-btn">U+1F300</button>emoji<br>
-    </div>
-    <span id="led-sip"></span><button onclick="unicode.showTable(0x20000);" class="move-btn" data-tooltip="Supplementary Ideographic Plane">U+20000(SIP)</button><br>
-    <span id="led-tip"></span><button onclick="unicode.showTable(0x30000);" class="move-btn" data-tooltip="Tertiary Ideographic Plane">U+30000(TIP)</button><br>
-    <span id="led-ssp"></span><button onclick="unicode.showTable(0xE0000);" class="move-btn" data-tooltip="Supplementary Special‐purpose Plane">U+E0000(SSP)</button><br>
+  <div style="display:inline-block;margin-top:4px;line-height:1.3em;font-size:12px;">
 
-    <div style="margin-left:12px;line-height:1.3em;">
-      <span id="led-ue0100"></span><button onclick="unicode.showTable(0xE0100);" class="move-btn">U+E0100</button>Variation Selectors<br>
-    </div>
-
-    <span id="led-pua1"></span><button onclick="unicode.showTable(0xF0000);" class="move-btn" data-tooltip="Private Use Area">U+F0000(PUA)</button><br>
-    <span id="led-pua2"></span><button onclick="unicode.showTable(0x100000);" class="move-btn" data-tooltip="Private Use Area">U+100000(PUA)</button><br>
+    <table>
+    <tr>
+    <td style="white-space:nowrap;vertical-align:top;">
+      <span id="led-bmp"></span><button onclick="unicode.showTable(0);" class="codeblobk-btn" data-tooltip="Basic Multilingual Plane">U+0000(BMP)</button><br>
+      <div style="margin-left:12px;line-height:1.3em;">
+        <span id="led-u0000"></span><button onclick="unicode.showTable(0x0000);" class="codeblobk-btn">U+0000</button>ASCII<br>
+        <span id="led-u0080"></span><button onclick="unicode.showTable(0x0080);" class="codeblobk-btn">U+0080</button>Latin-1 Supplement<br>
+        <span id="led-u0400"></span><button onclick="unicode.showTable(0x0400);" class="codeblobk-btn">U+0400</button>Кириллица<br>
+        <span id="led-u0600"></span><button onclick="unicode.showTable(0x0600);" class="codeblobk-btn">U+0600</button>عربی حروف تہجی<br>
+        <span id="led-u0e00"></span><button onclick="unicode.showTable(0x0E00);" class="codeblobk-btn">U+0E00</button>อักษรไทย<br>
+        <span id="led-u2000"></span><button onclick="unicode.showTable(0x2000);" class="codeblobk-btn">U+2000</button>Symbols<br>
+        <span id="led-u3040"></span><button onclick="unicode.showTable(0x3040);" class="codeblobk-btn">U+3040</button>ひらがな/カタカナ<br>
+        <span id="led-u3100"></span><button onclick="unicode.showTable(0x3100);" class="codeblobk-btn">U+3100</button>ㄅㄆㄇㄈ<br>
+        <span id="led-u3400"></span><button onclick="unicode.showTable(0x3400);" class="codeblobk-btn">U+3400</button>CJK統合漢字<br>
+        <span id="led-uac00"></span><button onclick="unicode.showTable(0xAC00);" class="codeblobk-btn">U+AC00</button>한글<br>
+        <span id="led-ud800"></span><button onclick="unicode.showTable(0xD800);" class="codeblobk-btn">U+D800</button>Surrogates<br>
+        <span id="led-ue000"></span><button onclick="unicode.showTable(0xE000);" class="codeblobk-btn">U+E000</button>Private Use Area<br>
+        <span id="led-uf900"></span><button onclick="unicode.showTable(0xF900);" class="codeblobk-btn">U+F900</button>CJK互換漢字<br>
+        <span id="led-ufe00"></span><button onclick="unicode.showTable(0xFE00);" class="codeblobk-btn">U+FE00</button>Variation Selectors<br>
+        <span id="led-uff00"></span><button onclick="unicode.showTable(0xFF00);" class="codeblobk-btn">U+FF00</button>Fullwidth Forms<br>
+        <span id="led-uff60"></span><button onclick="unicode.showTable(0xFF60);" class="codeblobk-btn">U+FF60</button>半角ｶﾅ<br>
+      </div>
+    </td>
+    <td style="white-space:nowrap;vertical-align:top;">
+      <span id="led-smp"></span><button onclick="unicode.showTable(0x10000);" class="codeblobk-btn" data-tooltip="Supplementary Multilingual Plane">U+10000(SMP)</button><br>
+      <div style="margin-left:12px;line-height:1.3em;">
+        <span id="led-u1f300"></span><button onclick="unicode.showTable(0x1F300);" class="codeblobk-btn">U+1F300</button>emoji<br>
+      </div>
+      <span id="led-sip"></span><button onclick="unicode.showTable(0x20000);" class="codeblobk-btn" data-tooltip="Supplementary Ideographic Plane">U+20000(SIP)</button><br>
+      <span id="led-tip"></span><button onclick="unicode.showTable(0x30000);" class="codeblobk-btn" data-tooltip="Tertiary Ideographic Plane">U+30000(TIP)</button><br>
+      <span id="led-ssp"></span><button onclick="unicode.showTable(0xE0000);" class="codeblobk-btn" data-tooltip="Supplementary Special‐purpose Plane">U+E0000(SSP)</button><br>
+      <div style="margin-left:12px;line-height:1.3em;">
+        <span id="led-ue0100"></span><button onclick="unicode.showTable(0xE0100);" class="codeblobk-btn">U+E0100</button>Variation Selectors<br>
+      </div>
+      <span id="led-pua1"></span><button onclick="unicode.showTable(0xF0000);" class="codeblobk-btn" data-tooltip="Private Use Area">U+F0000(PUA)</button><br>
+      <span id="led-pua2"></span><button onclick="unicode.showTable(0x100000);" class="codeblobk-btn" data-tooltip="Private Use Area">U+100000(PUA)</button><br>
+    </td>
+    </tr>
+    </table>
   </div>
 </div>
 </div>
