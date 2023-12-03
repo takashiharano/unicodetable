@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="referrer" content="never">
+<title>Unicode Table</title>
+<!--
+Unicode Table
+Copyright 2020 Takashi Harano
+Released under the MIT license
+-->
+<script src="./libs/debug.js"></script>
+<script src="./libs/util.js"></script>
+<style>
+body {
+  box-sizing: border-box;
+  background: #000;
+  color: #fff;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+}
+
+h1, h2 {
+  display: inline;
+  margin: 0;
+  font-family: Meiryo;
+}
+
+h1 {
+  font-size: 32px;
+}
+
+h2 {
+  font-size: 24px;
+}
+
+a {
+  color: #cff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+input[type="text"] {
+  border: none;
+  border-bottom: 1px solid #888;
+  background: transparent;
+  color: #fff;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+  outline: none;
+}
+
+button, input[type="button"], input[type="submit"] {
+  border: none;
+  border-radius: 1px;
+  outline: none;
+  color: #fff;
+  background: #0e51d0;
+  transition: all 0.2s ease;
+}
+button:hover, input[type="button"]:hover, input[type="submit"]:hover {
+  cursor: pointer;
+  background: #1d8eff;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+button:disabled, input[type="button"]:disabled, input[type="submit"]:disabled {
+  background: #888;
+}
+
+.small-button {
+  height: 12px;
+  font-size: 11px;
+}
+
+.btn-active {
+  background: #0bf;
+}
+.btn-inactive {
+  background: #033581;
+  color: #ccc;
+}
+
+pre {
+  margin: 0;
+  padding: 0;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+}
+
+.line {
+  width:100%;
+  height: 1px;
+  border: none;
+  border-top: 1px solid #1883d7;
+  margin: 0 0 4px 0;
+}
+
+.hex {
+  font-size: 9px;
+}
+
+table.unicode {
+  width: 890px;
+  border: solid 1px #0af;
+  border-collapse: collapse;
+  border-spacing: 1px;
+  empty-cells: show;
+  background: #fff;
+  color: #000;
+  font-size: 14px;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+}
+
+th {
+  border: solid 1px #0af;
+  padding: 0 6px;
+  background: #9cf;
+  text-align: center;
+  color: #000;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+  font-weight: normal;
+}
+
+td.unicode-body {
+  border: solid 1px #0af;
+  padding: 0 6px;
+  text-align: center;
+  font-size: 14px;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+}
+
+.unicode-body:hover {
+  background: #d0ffff;
+}
+
+.ctrl-char {
+  color: #00a;
+}
+
+.ctrl-char-l {
+  color: #bdf;
+}
+
+.target {
+  background: #cfc !important;
+}
+
+.move-btn {
+  min-width: 64px;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+}
+
+.btn-half {
+  min-width: 32px;
+};
+
+#main {
+  position: relative;
+  padding: 0 50px;
+}
+
+#content {
+  position: relative;
+  width: 1180px;
+  margin: auto;
+}
+
+#code-table-wrapper {
+  display: inline-block;
+  position: relative;
+  float: left;
+}
+
+#code-info {
+  display: inline-block;
+  position: relative;
+  float: left;
+  width: 100%;
+  height: 350px;
+  margin-left: 4px;
+  border: 1px solid #888;
+  border-radius: 3px;
+  padding: 4px;
+  background: #222;
+}
+
+#codepoint {
+  color: #bf8;
+}
+
+#char-wrapper1 {
+  display: inline-block;
+  height: 60px;
+  font-size: 46px;
+}
+#char-wrapper {
+  display: table;
+  height: 100%;
+}
+#char {
+  display: table-cell;
+  height: 100%;
+  vertical-align: middle;
+}
+
+#desc {
+  position: relative;
+  margin-left:12px;
+  font-size: 12px;
+}
+
+#point-val {
+  font-size: 14px;
+}
+
+.led {
+  padding-left: 4px;
+  margin-right: 2px;
+}
+
+#text {
+  width: 880px;
+  height: 45px;
+  background: transparent;
+  color: #fff;
+  font-size: 13px;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+}
+</style>
+<script>
+var unicode = {};
+unicode.MAX_POINT = 0x10FFFF;
+unicode.CTRL_CHRS = {
+  0: {chr: 'NUL', desc: 'NULL'},
+  1: {chr: 'SOH', desc: 'Start of Heading'},
+  2: {chr: 'STX', desc: 'Start of Text'},
+  3: {chr: 'ETX', desc: 'End of Text'},
+  4: {chr: 'EOT', desc: 'End of Transmission'},
+  5: {chr: 'ENQ', desc: 'Inquiry'},
+  6: {chr: 'ACK', desc: 'Acknowledge'},
+  7: {chr: 'BEL', desc: 'Bell(Beep)'},
+  8: {chr: 'BS', desc: 'Back Space'},
+  9: {chr: 'HT', desc: 'Horizontal Tabulation'},
+  10: {chr: 'LF', desc: 'Line Feed'},
+  11: {chr: 'VT', desc: 'Vertical Tabulation'},
+  12: {chr: 'FF', desc: 'Form Feed'},
+  13: {chr: 'CR', desc: 'Carriage Return'},
+  14: {chr: 'SO', desc: 'Shift Out'},
+  15: {chr: 'SI', desc: 'Shift In'},
+  16: {chr: 'DLE', desc: 'Data Link Escape'},
+  17: {chr: 'DC1', desc: 'Device Control 1'},
+  18: {chr: 'DC2', desc: 'Device Control 2'},
+  19: {chr: 'DC3', desc: 'Device Control 3'},
+  20: {chr: 'DC4', desc: 'Device Control 4'},
+  21: {chr: 'NAC', desc: 'Negative Acknowledge'},
+  22: {chr: 'SYN', desc: 'Synchronous Character'},
+  23: {chr: 'ETB', desc: 'End of Transfer Block'},
+  24: {chr: 'CAN', desc: 'Cancel'},
+  25: {chr: 'EM', desc: 'End of Medium'},
+  26: {chr: 'SUB', desc: 'Substitute'},
+  27: {chr: 'ESC', desc: 'Escape'},
+  28: {chr: 'FS', desc: 'File Separator'},
+  29: {chr: 'GS', desc: 'Group Separator'},
+  30: {chr: 'RS', desc: 'Record Separator'},
+  31: {chr: 'US', desc: 'Unit Separator'},
+  32: {chr: '&nbsp;', desc: 'Space'},
+  0x7F: {chr: 'DEL', desc: 'Delete'},
+  0xA0: {chr: 'NBSP', desc: 'Non-breaking space'},
+  0x200B: {chr: 'ZWSP', desc: 'Zero-width space'},
+  0x200E: {chr: 'LRM', desc: 'Left-to-Right Mark'},
+  0x200F: {chr: 'RLM', desc: 'Right-to-Left Mark'},
+  0x202A: {chr: 'LRE', desc: 'Left-to-Right Embedding'},
+  0x202B: {chr: 'RLE', desc: 'Right-to-Left Embedding'},
+  0x202C: {chr: 'PDF', desc: 'Pop Directional Formatting'},
+  0x202D: {chr: 'LRO', desc: 'Left-to-Right Override'},
+  0x202E: {chr: 'RLO', desc: 'Right-to-Left Override'},
+  0xFE00: {chr: 'VS1', desc: 'Variation Selector-1'},
+  0xFE01: {chr: 'VS2', desc: 'Variation Selector-2'},
+  0xFE02: {chr: 'VS3', desc: 'Variation Selector-3'},
+  0xFE03: {chr: 'VS4', desc: 'Variation Selector-4'},
+  0xFE04: {chr: 'VS5', desc: 'Variation Selector-5'},
+  0xFE05: {chr: 'VS6', desc: 'Variation Selector-6'},
+  0xFE06: {chr: 'VS7', desc: 'Variation Selector-7'},
+  0xFE07: {chr: 'VS8', desc: 'Variation Selector-8'},
+  0xFE08: {chr: 'VS9', desc: 'Variation Selector-9'},
+  0xFE09: {chr: 'VS10', desc: 'Variation Selector-10'},
+  0xFE0A: {chr: 'VS11', desc: 'Variation Selector-11'},
+  0xFE0B: {chr: 'VS12', desc: 'Variation Selector-12'},
+  0xFE0C: {chr: 'VS13', desc: 'Variation Selector-13'},
+  0xFE0D: {chr: 'VS14', desc: 'Variation Selector-14'},
+  0xFE0E: {chr: 'VS15', desc: 'Variation Selector-15'},
+  0xFE0F: {chr: 'VS16', desc: 'Variation Selector-16'},
+  0xE0100: {chr: 'VS17', desc: 'Variation Selector-17'},
+  0xE0110: {chr: 'VS33', desc: 'Variation Selector-33'},
+  0xE0120: {chr: 'VS49', desc: 'Variation Selector-49'},
+  0xE0130: {chr: 'VS65', desc: 'Variation Selector-65'},
+  0xE0140: {chr: 'VS81', desc: 'Variation Selector-81'},
+  0xE0150: {chr: 'VS97', desc: 'Variation Selector-97'},
+  0xE0160: {chr: 'VS113', desc: 'Variation Selector-113'},
+  0xE0170: {chr: 'VS129', desc: 'Variation Selector-129'},
+  0xE0180: {chr: 'VS145', desc: 'Variation Selector-145'},
+  0xE0190: {chr: 'VS161', desc: 'Variation Selector-161'},
+  0xE01A0: {chr: 'VS177', desc: 'Variation Selector-177'},
+  0xE01B0: {chr: 'VS193', desc: 'Variation Selector-193'},
+  0xE01C0: {chr: 'VS209', desc: 'Variation Selector-209'},
+  0xE01D0: {chr: 'VS225', desc: 'Variation Selector-225'},
+  0xE01E0: {chr: 'VS241', desc: 'Variation Selector-241'},
+  0xE01EF: {chr: 'VS256', desc: 'Variation Selector-256'}
+};
+unicode.DFLT_ROWS = 16;
+unicode.ROWS_MAX = 1024;
+unicode.start = null;
+unicode.currentStart = 0;
+unicode.target = null;
+unicode.rows = unicode.DFLT_ROWS;
+
+unicode.LED_IDS = ['bmp', 'smp', 'sip', 'tip', 'ssp', 'pua1', 'pua2', 'u0000', 'u0080', 'u0400', 'u0600', 'u0e00', 'u2000', 'u3040', 'u3100', 'u3400','uac00', 'ud800', 'ue000', 'uf900', 'ufe00', 'uff00', 'uff60', 'u1f300', 'ue0100'];
+unicode.LEDs = {};
+
+$onLoad = function() {
+  util.tooltip.setDelay(300);
+  util.tooltip.disabled = true;
+
+  var start = util.getQuery('start');
+  var point = util.getQuery('p');
+  var ch = util.getQuery('ch');
+  var rows = util.getQuery('rows');
+
+  if (start != null) {
+    start |= 0;
+  }
+  if (point != null) {
+    point |= 0;
+    $el('#target-point').value = util.lpad(point, '0', 4);
+  }
+  if (ch != null) {
+    ch = decodeURIComponent(ch);
+    $el('#target-char').value = ch;
+  }
+
+  if (rows) {
+    $el('#rows').value = rows;
+  }
+
+  $el('#chk-tooltip').addEventListener('change', unicode.onChangeTooltip);
+  util.textarea.addListener('#text', unicode.textareaListener);
+
+  unicode.initLeds();
+  unicode.showTable(start, point, ch, rows);
+  unicode.setBtnStyle();
+};
+
+unicode.initLeds = function() {
+  for (var i = 0; i < unicode.LED_IDS.length; i++) {
+    var id = unicode.LED_IDS[i];
+    unicode.LEDs[id] = new util.Led('#led-' + id, false);
+  }
+};
+unicode.allLedOff = function() {
+  for (var id in unicode.LEDs) {
+    var led = unicode.LEDs[id];
+    led.off();
+  }
+};
+unicode.ledOn = function(id) {
+ var led = unicode.LEDs[id];
+ led.on();
+};
+unicode.ledOff = function(id) {
+ var led = unicode.LEDs[id];
+ led.off();
+};
+
+unicode.showTable = function(startPoint, targetPoint, targetCh, rows) {
+  if (targetPoint >= unicode.MAX_POINT) {
+    util.infotip.show('Out of range: U+' + targetPoint.toString(16) + ' (U+0000 - U+10FFFF)', 3000);
+    return;
+  }
+
+  if (!rows) {
+    rows = $el('#rows').value;
+  }
+
+  if (targetPoint !== undefined) {
+    var codePoint = targetPoint;
+    if (targetPoint) {
+      codePoint = util.toHex((targetPoint | 0), true);
+    }
+  }
+
+  var target = null;
+  if ((targetPoint != undefined) && (targetPoint != null)) {
+    target = targetPoint;
+  }
+  if ((targetCh != undefined) && (targetCh != null)) {
+    target = unicode.ch2point(targetCh);
+  }
+  if (target != null) {
+    unicode.target = target;
+    unicode.showDetails(target);
+  } else if ((targetPoint == '') || (targetCh == '')) {
+    unicode.target = null;
+  }
+
+  var start = startPoint;
+  if ((target != undefined) && (target != null)) {
+    if ((start == undefined) || (start == null)) {
+      if (rows < 16) {
+        start = target - (0x10 * Math.floor(rows / 2));
+      } else {
+        start = target - 0x70
+      }
+    }
+  }
+
+  if (start < 0) start = 0;
+  if (target > 0) {
+    if (start <= target) {
+      if (target - start >= 256) {
+        start = target;
+      }
+    } else {
+      if (start - target >= 256) {
+        start = target;
+      }
+    }
+  }
+
+  if ((startPoint == null) && (target != null) && (target >= 0) && (target <= 255)) {
+    start = 0;
+  }
+
+  unicode.start = start;
+
+  var html = unicode.createTable(start, rows);
+  $el('#code-table').innerHTML = html;
+  var font = $el('#char-font').value;
+  unicode.setTableFont(font);
+
+  var tblBody = document.getElementsByClassName('unicode-body');
+  for (var i = 0; i < tblBody.length; i++) {
+    tblBody[i].addEventListener('wheel', unicode.onWheel);
+  }
+};
+
+unicode.createTable = function(start, rows) {
+  if (rows == '') {
+    rows = unicode.DFLT_ROWS;
+  }
+  unicode.rows = rows;
+
+  var startPoint = start | 0;
+  if (startPoint < 0) {
+    startPoint = 0;
+  }
+
+  var offset = startPoint % 16;
+  if (offset > 0) {
+    startPoint -= offset;
+  }
+  unicode.currentStart = startPoint;
+
+  unicode.prevPgPoint = startPoint - (16 * unicode.rows);
+  unicode.prevRowPoint = startPoint - 16;
+  unicode.nextRowPoint = startPoint + 16;
+  unicode.nextPgPoint = startPoint + (16 * unicode.rows);
+
+  if (!rows || rows < 0) {
+    rows = unicode.DFLT_ROWS;
+  } else if (rows > unicode.ROWS_MAX) {
+    rows = unicode.ROWS_MAX;
+  }
+
+  var html = '';
+  html += '<table class="unicode">';
+  html += '<tr>';
+  html += '  <th nowrap>&nbsp;</td>';
+  html += '  <th width="36">+0<br><span class="hex">0000</span></td>';
+  html += '  <th width="36">+1<br><span class="hex">0001</span></td>';
+  html += '  <th width="36">+2<br><span class="hex">0010</span></td>';
+  html += '  <th width="36">+3<br><span class="hex">0011</span></td>';
+  html += '  <th width="36">+4<br><span class="hex">0100</span></td>';
+  html += '  <th width="36">+5<br><span class="hex">0101</span></td>';
+  html += '  <th width="36">+6<br><span class="hex">0110</span></td>';
+  html += '  <th width="36">+7<br><span class="hex">0111</span></td>';
+  html += '  <th width="36">+8<br><span class="hex">1000</span></td>';
+  html += '  <th width="36">+9<br><span class="hex">1001</span></td>';
+  html += '  <th width="36">+A<br><span class="hex">1010</span></td>';
+  html += '  <th width="36">+B<br><span class="hex">1011</span></td>';
+  html += '  <th width="36">+C<br><span class="hex">1100</span></td>';
+  html += '  <th width="36">+D<br><span class="hex">1101</span></td>';
+  html += '  <th width="36">+E<br><span class="hex">1110</span></td>';
+  html += '  <th width="36">+F<br><span class="hex">1111</span></td>';
+  html += '</tr>';
+
+  var basePoint = startPoint;
+  for (var i = 0; i < rows; i++) {
+    if (basePoint > unicode.MAX_POINT) break;
+    var basePointHex = util.toHex(basePoint, true);
+    var basePointBin = util.toBin(basePoint, 16);
+    var basePointHeadingBin = basePointBin.substr(0, 12) + 'xxxx';
+    html += '<tr>';
+    html += '<th>';
+    html += util.lpad(basePointHex, '0', 4);
+    html += '<br>';
+    html += '<span class="hex">' + basePointHeadingBin + '</span>';
+    html += '</td>';
+    for (var j = 0; j < 16; j++) {
+      var point = basePoint + j;
+      var pointBin = util.toBin(point, 16);
+      var pointHex = util.toHex(point, true);
+      var ch = '&#' + point;
+      var utf8 = unicode.dumpUTF8Bytes(point);
+      var chClz = '';
+      if (unicode.CTRL_CHRS[point]) {
+        ch = unicode.CTRL_CHRS[point].chr;
+        chClz = 'ctrl-char';
+      }
+      var hex = util.lpad(pointHex, '0', 2);
+      var tooltip = 'HEX: ' + hex + '\n';
+      tooltip += 'DEC: ' + point + '\n';
+      tooltip += 'BIN: ' + pointBin + '\n';
+      tooltip += '\n';
+      tooltip += 'UTF-8: ' + utf8 + '\n';
+      var clz = 'unicode-body';
+      if (chClz) {
+        clz += ' ' + chClz;
+      }
+      if ((unicode.target != '') && (point == unicode.target)) {
+        clz += ' target';
+      }
+      html += '<td class="' + clz + '" data-tooltip="' + tooltip + '" ondblclick="unicode.selectChar(0x' + pointHex + ');" onmouseover="unicode.onHoverCh(0x' + pointHex + ');" onmouseout="unicode.onOutCh();">' + ch + '</td>';
+    }
+    html += '</tr>';
+    basePoint += 16;
+  }
+
+  html += '</table>';
+  unicode.updateLed(start);
+  return html;
+};
+
+unicode.updateLed = function(v) {
+  unicode.allLedOff();
+  var ledId = 'bmp';
+  if (v >= 0x10000) ledId = 'smp';
+  if (v >= 0x20000) ledId = 'sip';
+  if (v >= 0x30000) ledId = 'tip';
+  if (v >= 0xE0000) ledId = 'ssp';
+  if (v >= 0xF0000) ledId = 'pua1';
+  if (v >= 0x100000) ledId = 'pua2';
+  unicode.ledOn(ledId);
+
+  ledId = '';
+  if (unicode.inRange(v, 0x000, 0x007F)) {
+    ledId = 'u0000';
+  } else if (unicode.inRange(v, 0x0080, 0x00FF)) {
+    ledId = 'u0080';
+  } else if (unicode.inRange(v, 0x0400, 0x052F)) {
+    ledId = 'u0400';
+  } else if (unicode.inRange(v, 0x0600, 0x06FF)) {
+    ledId = 'u0600';
+  } else if (unicode.inRange(v, 0x0E00, 0x0E7F)) {
+    ledId = 'u0e00';
+  } else if (unicode.inRange(v, 0x2000, 0x2DFF)) {
+    ledId = 'u2000';
+  } else if (unicode.inRange(v, 0x3040, 0x30FF)) {
+    ledId = 'u3040';
+  } else if (unicode.inRange(v, 0x3100, 0x312F)) {
+    ledId = 'u3100';
+  } else if (unicode.inRange(v, 0x3400, 0x9FFF)) {
+    ledId = 'u3400';
+  } else if (unicode.inRange(v, 0xAC00, 0xD7AF)) {
+    ledId = 'uac00';
+  } else if (unicode.inRange(v, 0xD800, 0xDFFF)) {
+    ledId = 'ud800';
+  } else if (unicode.inRange(v, 0xE000, 0xF8FF)) {
+    ledId = 'ue000';
+  } else if (unicode.inRange(v, 0xF900, 0xFAFF)) {
+    ledId = 'uf900';
+  } else if (unicode.inRange(v, 0xFE00, 0xFE0F)) {
+    ledId = 'ufe00';
+  } else if (unicode.inRange(v, 0xFF00, 0xFF5F)) {
+    ledId = 'uff00';
+  } else if (unicode.inRange(v, 0xFF60, 0xFF9F)) {
+    ledId = 'uff60';
+  } else if (unicode.inRange(v, 0x1F300, 0x1F5FF)) {
+    ledId = 'u1f300';
+  } else if (unicode.inRange(v, 0xE0100, 0xE01EF)) {
+    ledId = 'ue0100';
+  }
+  if (ledId) unicode.ledOn(ledId);
+};
+
+unicode.inRange = function(v, s, e) {
+  return ((s <= v) && (v <= e));
+};
+
+unicode.onHoverCh = function(point) {
+  if (!unicode.target) {
+    unicode.showDetails(point);
+    unicode.updateLed(point);
+  }
+};
+unicode.onOutCh = function() {
+  if (!unicode.target) {
+    unicode.showDetails(-1);
+    unicode.updateLed(-1);
+  }
+};
+
+unicode.showDetails = function(point) {
+  if (point < 0) {
+    unicode.clearDetail();
+    return;
+  }
+  var pointBin = util.toBin(point, 16);
+  var pointHex = util.toHex(point, true);
+  var ch = '&#' + point;
+  var utf8 = 'UTF-8: ' + unicode.dumpUTF8Bytes(point);
+  var utf16 = 'UTF-16:\n';
+  utf16 += 'BE: ' + unicode.dumpUTF16Bytes(point) + '\n';
+  utf16 += 'LE: ' + unicode.dumpUTF16Bytes(point, true);
+  var desc = '';
+  var chClz = '';
+  if (unicode.CTRL_CHRS[point]) {
+    chClz = 'ctrl-char-l';
+    ch = unicode.CTRL_CHRS[point].chr;
+    desc = '<span id="desc" class="' + chClz + '">' + unicode.CTRL_CHRS[point].desc + '</span>';
+  }
+  var hex = util.lpad(pointHex, '0', 4);
+  var codepoint = 'U+' + util.lpad(hex, '0', 4);
+  codepoint += desc;
+  var pointVal = '';
+  pointVal += 'HEX: ' + util.lpad(pointHex, '0', 2) + '\n';
+  pointVal += 'DEC: ' + point + '\n';
+  pointVal += 'BIN: ' + pointBin + '\n';
+  pointVal += '&amp;#x' + pointHex + '; ';
+  pointVal += '&amp;#' + point + ';';
+  pointVal += '\n\n';
+  pointVal += utf8 + '\n';
+  pointVal += utf16;
+
+  $el('#char-wrapper').innerHTML = '<div id="char" class="' + chClz + '">' + ch + '</div>';
+  $el('#codepoint').innerHTML = codepoint;
+  $el('#point-val').innerHTML = pointVal;
+};
+
+unicode.clearDetail = function() {
+  $el('#char-wrapper').innerHTML = '';
+  $el('#codepoint').innerHTML = '';
+  $el('#desc').innerHTML = '';
+  $el('#point-val').innerHTML = '';
+};
+
+unicode.ch2point = function(ch) {
+  var point;
+  if (ch.codePointAt) {
+    point = ch.codePointAt(0);
+  } else {
+    point = ch.charCodeAt(0);
+  }
+  return point;
+};
+
+unicode.searchPoint = function(val, base) {
+  if (val == '') {
+    unicode.clearChar();
+    return;
+  }
+  var point;
+  if (base == 10) {
+    point = val | 0;
+  } else {
+    point = ('0x' + val) | 0;
+  }
+  unicode.showTable(null, point);
+};
+unicode.searchChar = function(ch) {
+  if (ch) {
+    unicode.showTable(null, null, ch);
+  } else {
+    unicode.showTable(0);
+  }
+};
+
+unicode.selectChar = function(point) {
+  if (point == unicode.target) {
+    unicode.clearChar();
+  } else {
+    unicode.showDetails(point);
+    unicode.showTable(unicode.start, point);
+    unicode.updateLed(point);
+  }
+};
+
+unicode.clearChar = function() {
+  unicode.target = null;
+  point = null;
+  unicode.showTable(unicode.start, point);
+};
+
+unicode.setRows = function(rows) {
+  unicode.showTable(unicode.start, unicode.target, null, rows);
+};
+
+unicode.setFont = function(font) {
+  $el('#char-wrapper').style.fontFamily = font;
+  unicode.setTableFont(font);
+};
+unicode.setTableFont = function(font) {
+  var tds = $el('.unicode-body');
+  if (!tds) return;
+  for (var i = 0; i < tds.length; i++) {
+    tds[i].style.fontFamily = font;
+  }
+};
+
+unicode.getURL = function() {
+  var start = unicode.start;
+  if (start) {
+    start = util.toHex(start, true);
+  }
+  var target = unicode.target;
+  if (target) {
+    target = util.toHex(unicode.target, true);
+  }
+  var rows = unicode.rows;
+  var q = '';
+  if (target) {
+    q += 'p=0x' + target;
+  }
+  if (start) {
+    if (q) {
+      q += '&';
+    }
+    q += 'start=0x' + start;
+  }
+  if (rows != unicode.DFLT_ROWS) {
+    if (q) {
+      q += '&';
+    }
+    q += 'rows=' + rows;
+  }
+  var url = location.origin + location.pathname;
+  if (q) {
+    url += '?' + q;
+  }
+  return url;
+};
+
+unicode.onChangeTooltip = function() {
+  unicode.toggleTooltip();
+};
+
+unicode.toggleTooltip = function() {
+  if (util.tooltip.disabled) {
+    util.tooltip.disabled = false;
+  } else {
+    util.tooltip.disabled = true;
+    util.tooltip.hide();
+  }
+  unicode.setBtnStyle();
+};
+unicode.setBtnStyle = function() {
+  if (unicode.autoScrolling) {
+    util.addClass('#auto-btn', 'btn-active');
+  } else {
+    util.removeClass('#auto-btn', 'btn-active');
+  }
+
+  if (unicode.autoSeq) {
+    util.addClass('#auto-seq-btn', 'btn-active');
+  } else {
+    util.removeClass('#auto-seq-btn', 'btn-active');
+  }
+};
+
+unicode.copyURL = function() {
+  var url = unicode.getURL();
+  util.copy(url);
+  util.infotip.show('The URL has been copied to clipboard.', 1500, {pos: 'pointer'});
+};
+
+unicode.getUTF8bytes = function(a) {
+  var ch;
+  if (typeof a == 'number') {
+    var el = document.createElement('div');
+    el.innerHTML = '&#' + a;
+    ch = el.innerText;
+  } else {
+    ch = a;
+  }
+  var b = util.UTF8.toByteArray(ch);
+  return b;
+};
+
+unicode.getUTF8byteSeq = function(b) {
+  var len = b.length;
+  var s = '';
+  for (var i = 0; i < len; i++) {
+    s += '%';
+    s += util.toHex(b[i], true, 2);
+  }
+  s += ' (' + len + util.plural('byte', len) + ')';
+  s += '\n';
+  for (i = 0; i < 4; i++) {
+    var v = b[i];
+    s += '[' + i + '] ';
+    if (v != undefined) {
+      s += util.toHex(v, true, 2, '0x');
+      s += ' ';
+      s += util.toBin(v, 8);
+    }
+    s += '\n';
+  }
+  return s;
+};
+
+unicode.dumpUTF8Bytes = function(p) {
+  var b = unicode.getUTF8bytes(p);
+  var d = unicode.getUTF8byteSeq(b);
+  return d;
+};
+unicode.dumpUTF16Bytes = function(p, le) {
+  var a = unicode._dumpUTF16Bytes(p, le);
+  var b = '';
+  for (var i = 0; i < a.length; i++) {
+    if (i > 0) b += ' ';
+    b += a[i];
+  }
+  return b;
+};
+unicode._dumpUTF16Bytes = function(p, le) {
+  var c = String.fromCodePoint(p);
+  var b = escape(c).replace(/[%u]/g, '');
+  if (b.length == 1) {
+    b = ('0' + b.charCodeAt(0).toString(16).toUpperCase()).slice(-2);
+  }
+  if (b.length == 2) b = '00' + b;
+  var a = util.divideString(b, 2);
+  if (le) {
+    var d = [];
+    for (var i = 0; i < a.length; i += 2) {
+      d.push(a[i + 1]);
+      d.push(a[i]);
+    }
+    a = d;
+  }
+  return a;
+};
+
+unicode.autoScrolling = false;
+unicode.autoDisp = function(ms) {
+  if (ms == undefined) ms = 80;
+  var buf = new dbg.TextBuffer();
+  buf.add('@echo off');
+  buf.add('LOOP (');
+  buf.add('$el(\'#next-row-btn\').click()');
+  buf.add('wait ' + ms);
+  buf.add(')');
+  dbg.bat(buf.toString());
+  unicode.autoScrolling = true;
+};
+
+unicode.startStopAuto = function() {
+  if (unicode.autoScrolling) {
+    dbg.bat.stop();
+    unicode.autoScrolling = false;
+  } else {
+    unicode.autoDisp(5);
+  }
+  unicode.setBtnStyle();
+};
+
+unicode.autoSeq = false;
+unicode.startStopAutoSeq = function() {
+  if (unicode.autoSeq) {
+    dbg.bat.stop();
+    unicode.autoSeq = false;
+  } else {
+    unicode.autoSeqBat(5);
+  }
+  unicode.setBtnStyle();
+};
+unicode.autoSeqBat = function(ms, startP) {
+  if (startP == undefined) startP = unicode.target;
+  if (startP == null) startP = unicode.start;
+  var buf = new dbg.TextBuffer();
+  buf.add('@echo off');
+  buf.add('${p} = ' + startP);
+  buf.add('LOOP (');
+  buf.add('unicode.selectChar(${p})');
+  buf.add('${p}++');
+  buf.add('wait ' + ms);
+  buf.add(')');
+  dbg.bat(buf.toString());
+  unicode.autoSeq = true;
+};
+
+
+unicode.textareaListener = function(data) {
+  var point = data.codePoint;
+  if (point != undefined) {
+    unicode.showTable(null, point);
+    unicode.updateLed(point);
+  }
+};
+
+unicode.onWheel = function(e) {
+  var start = unicode.currentStart;
+  if (e.deltaY > 0) {
+    unicode.showTable(start + 16);
+  } else {
+    unicode.showTable(start - 16);
+  }
+};
+
+$onKeyDown = function(e) {
+  if (e.keyCode == 13) {
+    if (util.hasFocus('#target-point')) {
+      unicode.searchPoint($el('#target-point').value, 16);
+    } else if (util.hasFocus('#target-point10')) {
+      unicode.searchPoint($el('#target-point10').value, 10);
+    } else if (util.hasFocus('#target-char')) {
+      unicode.searchChar($el('#target-char').value);
+    } else if (util.hasFocus('#rows')) {
+      unicode.setRows($el('#rows').value);
+    } else if (util.hasFocus('#char-font')) {
+      unicode.setFont($el('#char-font').value);
+    }
+  }
+};
+
+$onMouseDown = function(e) {
+  if (e.button == 0) {
+    util.tooltip.hide();
+  }
+};
+</script>
+</head>
+<body>
+<div id="main">
+<div id="content">
+
+<div style="positin:relative;">
+<h1>Unicode Table</h1>
+
+<div style="display:inline-block;position:relative;left:20px;">
+  <span style="margin-left:4px;">
+  <input type="checkbox" id="chk-tooltip"><label for="chk-tooltip">Tooltip</label>
+  </span>
+
+<button id="auto-btn" onclick="unicode.startStopAuto();"style="margin-left:4px;">AUTO SCROLL</button>
+<button id="auto-seq-btn" onclick="unicode.startStopAutoSeq();"style="margin-left:4px;">AUTO SEQ</button>
+
+  <span style="margin-left:4px;">
+  <button onclick="unicode.copyURL();">Copy URL</button>
+  </span>
+</div>
+</div>
+
+<div class="line"></div>
+
+<div style="display:inline-block;position:relative;width:890px;margin-bottom:4px;">
+<span>
+Char:<input type="text" id="target-char" style="width:50px;"><button class="small-button" onclick="unicode.searchChar($el('#target-char').value);" style="margin-left:2px;">SHOW</button>
+</span>
+
+<span style="margin-left:10px;">
+U+<input type="text" id="target-point" style="width:50px;"><button class="small-button" onclick="unicode.searchPoint($el('#target-point').value, 16);" style="margin-left:2px;">SHOW</button>
+</span>
+
+<span>
+U+<span style="font-size:0.7em;">(10)</span><input type="text" id="target-point10" style="width:50px;"><button class="small-button" onclick="unicode.searchPoint($el('#target-point10').value, 10);" style="margin-left:2px;">SHOW</button>
+</span>
+
+<span style="margin-left:10px;">
+Rows:<input type="text" id="rows" style="width:50px;" value="16"><button class="small-button" onclick="unicode.setRows($el('#rows').value);" style="margin-left:2px;">SHOW</button>
+</span>
+
+<div style="display:inline-block;position:absolute;right:0;">
+  <button onclick="unicode.showTable(unicode.prevPgPoint);" class="move-btn btn-half" id="prev-pg-btn">↑↑</button>
+  <button onclick="unicode.showTable(unicode.prevRowPoint);" class="move-btn btn-half" id="prev-row-btn" style="margin-left:2px;">↑</button>
+  <button onclick="unicode.showTable(unicode.nextRowPoint);" class="move-btn btn-half" id="next-row-btn">↓</button>
+  <button onclick="unicode.showTable(unicode.nextPgPoint);" class="move-btn btn-half" id="next-pg-btn" style="margin-left:4px;">↓↓</button>
+</div>
+</div><br>
+
+<div>
+  <div id="code-table-wrapper">
+    <div id="code-table"></div>
+    <div style="height:24px;">
+      <span style="margin-left:10px;">
+      Font-family:<input type="text" id="char-font" style="width:120px;" oninput="unicode.setFont($el('#char-font').value);" onchange="unicode.setFont($el('#char-font').value);">
+      </span>
+    </div>
+    <div>
+      <textarea id="text" spellcheck="false"></textarea>
+    </div>
+  </div>
+  <div style="display:inline-block;width:calc(100% - 900px);">
+    <div id="code-info">
+    <pre style="width:100%;height:100%;">
+<span id="codepoint"></span>
+<div id="char-wrapper1"><div id="char-wrapper"></div></div>
+<span id="point-val"></span>
+</pre>
+  </div>
+  <div style="display:inline-block;margin-top:4px;line-height:1.3em;">
+    <span id="led-bmp"></span><button onclick="unicode.showTable(0);" class="move-btn" data-tooltip="Basic Multilingual Plane">U+0000(BMP)</button><br>
+    <div style="margin-left:12px;line-height:1.3em;">
+      <span id="led-u0000"></span><button onclick="unicode.showTable(0x0000);" class="move-btn">U+0000</button>ASCII<br>
+      <span id="led-u0080"></span><button onclick="unicode.showTable(0x0080);" class="move-btn">U+0080</button>Latin-1 Supplement<br>
+      <span id="led-u0400"></span><button onclick="unicode.showTable(0x0400);" class="move-btn">U+0400</button>Кириллица<br>
+      <span id="led-u0600"></span><button onclick="unicode.showTable(0x0600);" class="move-btn">U+0600</button>عربی حروف تہجی<br>
+      <span id="led-u0e00"></span><button onclick="unicode.showTable(0x0E00);" class="move-btn">U+0E00</button>อักษรไทย<br>
+      <span id="led-u2000"></span><button onclick="unicode.showTable(0x2000);" class="move-btn">U+2000</button>Symbols<br>
+      <span id="led-u3040"></span><button onclick="unicode.showTable(0x3040);" class="move-btn">U+3040</button>ひらがな/カタカナ<br>
+      <span id="led-u3100"></span><button onclick="unicode.showTable(0x3100);" class="move-btn">U+3100</button>ㄅㄆㄇㄈ<br>
+      <span id="led-u3400"></span><button onclick="unicode.showTable(0x3400);" class="move-btn">U+3400</button>CJK統合漢字<br>
+      <span id="led-uac00"></span><button onclick="unicode.showTable(0xAC00);" class="move-btn">U+AC00</button>한글<br>
+      <span id="led-ud800"></span><button onclick="unicode.showTable(0xD800);" class="move-btn">U+D800</button>Surrogates<br>
+      <span id="led-ue000"></span><button onclick="unicode.showTable(0xE000);" class="move-btn">U+E000</button>Private Use Area<br>
+      <span id="led-uf900"></span><button onclick="unicode.showTable(0xF900);" class="move-btn">U+F900</button>CJK互換漢字<br>
+      <span id="led-ufe00"></span><button onclick="unicode.showTable(0xFE00);" class="move-btn">U+FE00</button>Variation Selectors<br>
+      <span id="led-uff00"></span><button onclick="unicode.showTable(0xFF00);" class="move-btn">U+FF00</button>Fullwidth Forms<br>
+      <span id="led-uff60"></span><button onclick="unicode.showTable(0xFF60);" class="move-btn">U+FF60</button>半角ｶﾅ<br>
+    </div>
+    <span id="led-smp"></span><button onclick="unicode.showTable(0x10000);" class="move-btn" data-tooltip="Supplementary Multilingual Plane">U+10000(SMP)</button><br>
+    <div style="margin-left:12px;line-height:1.3em;">
+      <span id="led-u1f300"></span><button onclick="unicode.showTable(0x1F300);" class="move-btn">U+1F300</button>emoji<br>
+    </div>
+    <span id="led-sip"></span><button onclick="unicode.showTable(0x20000);" class="move-btn" data-tooltip="Supplementary Ideographic Plane">U+20000(SIP)</button><br>
+    <span id="led-tip"></span><button onclick="unicode.showTable(0x30000);" class="move-btn" data-tooltip="Tertiary Ideographic Plane">U+30000(TIP)</button><br>
+    <span id="led-ssp"></span><button onclick="unicode.showTable(0xE0000);" class="move-btn" data-tooltip="Supplementary Special‐purpose Plane">U+E0000(SSP)</button><br>
+
+    <div style="margin-left:12px;line-height:1.3em;">
+      <span id="led-ue0100"></span><button onclick="unicode.showTable(0xE0100);" class="move-btn">U+E0100</button>Variation Selectors<br>
+    </div>
+
+    <span id="led-pua1"></span><button onclick="unicode.showTable(0xF0000);" class="move-btn" data-tooltip="Private Use Area">U+F0000(PUA)</button><br>
+    <span id="led-pua2"></span><button onclick="unicode.showTable(0x100000);" class="move-btn" data-tooltip="Private Use Area">U+100000(PUA)</button><br>
+  </div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
