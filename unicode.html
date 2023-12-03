@@ -732,15 +732,17 @@ unicode.getURL = function() {
   }
   var rows = unicode.rows;
   var q = '';
-  if (target) {
-    q += 'p=0x' + target;
-  }
   if (start) {
+    q += 'start=0x' + start;
+  }
+
+  if (target) {
     if (q) {
       q += '&';
     }
-    q += 'start=0x' + start;
+    q += 'p=0x' + target;
   }
+
   if (rows != unicode.DFLT_ROWS) {
     if (q) {
       q += '&';
