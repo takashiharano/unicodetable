@@ -689,6 +689,22 @@ unicode.searchChar = function(ch) {
   }
 };
 
+unicode.searchPointByUTF8 = function(v) {
+  v = v.replace(/[%\s]/g, '');
+  var a = v.match(/.{2}/g);
+  var u = '';
+  for (var i = 0; i < a.length; i++) {
+    u += '%' + a[i];
+  }
+  try {
+    var s = decodeURI(u);
+    var p = s.codePointAt(0);
+    unicode.searchPoint(p, 10);
+  } catch (e) {
+    util.infotip.show('ERROR', {style: {'font-size': '18px'}});
+  }
+};
+
 unicode.selectChar = function(point) {
   if (point == unicode.target) {
     unicode.clearChar();
@@ -933,6 +949,8 @@ $onKeyDown = function(e) {
       unicode.searchPoint($el('#target-point10').value, 10);
     } else if (util.hasFocus('#target-char')) {
       unicode.searchChar($el('#target-char').value);
+    } else if (util.hasFocus('#utf8')) {
+      unicode.searchPointByUTF8($el('#utf8').value);
     } else if (util.hasFocus('#rows')) {
       unicode.setRows($el('#rows').value);
     } else if (util.hasFocus('#char-font')) {
@@ -986,7 +1004,7 @@ U+<span style="font-size:0.7em;">(10)</span><input type="text" id="target-point1
 </span>
 
 <span style="margin-left:40px;">
-Rows:<input type="text" id="rows" style="width:50px;" value="16"><button class="small-button" onclick="unicode.setRows($el('#rows').value);" style="margin-left:2px;">SHOW</button>
+UTF-8:<input type="text" id="utf8" style="width:90px;"><button class="small-button" onclick="unicode.searchPointByUTF8($el('#utf8').value);" style="margin-left:2px;">SHOW</button>
 </span>
 
 <div style="display:inline-block;position:absolute;right:0;">
@@ -1004,6 +1022,9 @@ Rows:<input type="text" id="rows" style="width:50px;" value="16"><button class="
       <span style="margin-left:10px;">
       Font-family:<input type="text" id="char-font" style="width:120px;" oninput="unicode.setFont($el('#char-font').value);" onchange="unicode.setFont($el('#char-font').value);">
       </span>
+      <span style="position:absolute;right:0;">
+      Rows:<input type="text" id="rows" style="width:50px;" value="16"><button class="small-button" onclick="unicode.setRows($el('#rows').value);" style="margin-left:2px;">SHOW</button>
+      </span>
     </div>
     <div>
       <textarea id="text" spellcheck="false"></textarea>
@@ -1018,7 +1039,6 @@ Rows:<input type="text" id="rows" style="width:50px;" value="16"><button class="
 </pre>
   </div>
   <div style="display:inline-block;margin-top:4px;line-height:1.3em;font-size:12px;">
-
     <table>
     <tr>
     <td style="white-space:nowrap;vertical-align:top;">
