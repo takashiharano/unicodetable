@@ -1025,7 +1025,7 @@ $onMouseDown = function(e) {
 
 <div style="display:inline-block;position:relative;width:890px;margin-bottom:4px;">
 <span>
-Char:<input type="text" id="target-char" style="width:50px;"><button class="small-button" onclick="unicode.searchChar($el('#target-char').value);" style="margin-left:2px;">SHOW</button>
+CHAR:<input type="text" id="target-char" style="width:50px;" oninput="unicode.searchChar($el('#target-char').value);"><button class="small-button" onclick="unicode.searchChar($el('#target-char').value);" style="margin-left:2px;">SHOW</button>
 </span>
 
 <span style="margin-left:32px;">
