@@ -303,14 +303,18 @@ unicode.CTRL_CHRS = {
   0x9E: {chr: 'PM', desc: 'Privacy Message'},
   0x9F: {chr: 'APC', desc: 'Application Program Command'},
   0xA0: {chr: 'NBSP', desc: 'Non-breaking space'},
+  0xAD: {chr: 'SHY', desc: 'SOFT HYPHEN'},
   0x200B: {chr: 'ZWSP', desc: 'Zero-width space'},
   0x200E: {chr: 'LRM', desc: 'Left-to-Right Mark'},
   0x200F: {chr: 'RLM', desc: 'Right-to-Left Mark'},
+  0x2028: {chr: 'LS', desc: 'LINE SEPARATOR'},
+  0x2029: {chr: 'PS', desc: 'PARAGRAPH SEPARATOR'},
   0x202A: {chr: 'LRE', desc: 'Left-to-Right Embedding'},
   0x202B: {chr: 'RLE', desc: 'Right-to-Left Embedding'},
   0x202C: {chr: 'PDF', desc: 'Pop Directional Formatting'},
   0x202D: {chr: 'LRO', desc: 'Left-to-Right Override'},
   0x202E: {chr: 'RLO', desc: 'Right-to-Left Override'},
+  0x3000: {desc: 'IDEOGRAPHIC SPACE'},
   0xFE00: {chr: 'VS1', desc: 'Variation Selector-1'},
   0xFE01: {chr: 'VS2', desc: 'Variation Selector-2'},
   0xFE02: {chr: 'VS3', desc: 'Variation Selector-3'},
@@ -550,8 +554,9 @@ unicode.createTable = function(start, rows) {
       var ch = '&#' + point;
       var utf8 = unicode.dumpUTF8Bytes(point);
       var chClz = '';
-      if (unicode.CTRL_CHRS[point]) {
-        ch = unicode.CTRL_CHRS[point].chr;
+      var pointDef = unicode.CTRL_CHRS[point];
+      if (pointDef) {
+        if (pointDef.chr) ch = pointDef.chr;
         chClz = 'ctrl-char';
       }
       var hex = util.lpad(pointHex, '0', 2);
@@ -661,10 +666,11 @@ unicode.showDetails = function(point) {
   utf16 += 'LE: ' + unicode.dumpUTF16Bytes(point, true);
   var desc = '';
   var chClz = '';
-  if (unicode.CTRL_CHRS[point]) {
+  var pointDef = unicode.CTRL_CHRS[point];
+  if (pointDef) {
     chClz = 'ctrl-char-l';
-    ch = unicode.CTRL_CHRS[point].chr;
-    desc = '<span id="desc" class="' + chClz + '">' + unicode.CTRL_CHRS[point].desc + '</span>';
+    if (pointDef.chr) ch = pointDef.chr;
+    desc = '<span id="desc" class="' + chClz + '">' + pointDef.desc + '</span>';
   }
   var hex = util.lpad(pointHex, '0', 4);
   var codepoint = 'U+' + util.lpad(hex, '0', 4);
