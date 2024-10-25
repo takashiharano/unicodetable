@@ -16,7 +16,7 @@ Released under the MIT license
 <style>
 body {
   box-sizing: border-box;
-  background: #000;
+  background: #111;
   color: #fff;
   font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
 }
@@ -40,12 +40,35 @@ a:hover {
   text-decoration: underline;
 }
 
+input[type="text"], textarea {
+  color: #fff;
+  font-size: 16px;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+  outline: none;
+}
+
 input[type="text"] {
   border: none;
   border-bottom: 1px solid #888;
   background: transparent;
-  color: #fff;
-  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+}
+
+textarea {
+  min-height: 34px;
+  padding: 2px 5px;
+  vertical-align: middle;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.075);
+  transition: border linear 0.1s, box-shadow linear 0.1s;
+}
+
+textarea:focus {
+  border-color:#51a7e8;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,0.075),0 0px 5px rgba(81,167,232,0.5);
+}
+
+select {
   outline: none;
 }
 
@@ -356,7 +379,7 @@ unicode.currentStart = 0;
 unicode.target = null;
 unicode.rows = unicode.DFLT_ROWS;
 
-unicode.LED_IDS = ['bmp', 'smp', 'sip', 'tip', 'ssp', 'pua1', 'pua2', 'u0000', 'u0080', 'u0400', 'u0600', 'u0e00', 'u2000', 'u3040', 'u3100', 'u3400','uac00', 'ud800', 'ue000', 'uf900', 'ufe00', 'uff00', 'uff60', 'u1f300', 'ue0100'];
+unicode.LED_IDS = ['bmp', 'smp', 'sip', 'tip', 'ssp', 'pua1', 'pua2', 'u0000', 'u0080', 'u0370', 'u0400', 'u0600', 'u0e00', 'u2000', 'u3040', 'u3100', 'u3400','uac00', 'ud800', 'ue000', 'uf900', 'ufe00', 'uff00', 'uff60', 'u1f300', 'ue0100'];
 unicode.LEDs = {};
 
 $onLoad = function() {
@@ -599,6 +622,8 @@ unicode.updateLed = function(v) {
     ledId = 'u0000';
   } else if (unicode.inRange(v, 0x0080, 0x00FF)) {
     ledId = 'u0080';
+  } else if (unicode.inRange(v, 0x0370, 0x03FF)) {
+    ledId = 'u0370';
   } else if (unicode.inRange(v, 0x0400, 0x052F)) {
     ledId = 'u0400';
   } else if (unicode.inRange(v, 0x0600, 0x06FF)) {
@@ -707,6 +732,11 @@ unicode.ch2point = function(ch) {
   return point;
 };
 
+
+unicode.showPoint = function(val, base) {
+  unicode.searchPoint(val, base);
+};
+
 unicode.searchPoint = function(val, base) {
   if (val == '') {
     unicode.clearChar();
@@ -720,17 +750,11 @@ unicode.searchPoint = function(val, base) {
   }
   unicode.showTable(null, point);
 };
-unicode.searchChar = function(ch) {
-  if (ch) {
-    unicode.showTable(null, null, ch);
-  } else {
-    unicode.showTable(0);
-  }
-};
 
 unicode.searchPointByUTF8 = function(v) {
   v = v.replace(/[%\s]/g, '');
   var a = v.match(/.{2}/g);
+  if (!a) return;
   var u = '';
   for (var i = 0; i < a.length; i++) {
     u += '%' + a[i];
@@ -983,11 +1007,7 @@ unicode.onWheel = function(e) {
 $onKeyDown = function(e) {
   if (e.keyCode == 13) {
     if (util.hasFocus('#target-point')) {
-      unicode.searchPoint($el('#target-point').value, 16);
-    } else if (util.hasFocus('#target-point10')) {
-      unicode.searchPoint($el('#target-point10').value, 10);
-    } else if (util.hasFocus('#target-char')) {
-      unicode.searchChar($el('#target-char').value);
+      unicode.showPoint($el('#target-point').value);
     } else if (util.hasFocus('#utf8')) {
       unicode.searchPointByUTF8($el('#utf8').value);
     } else if (util.hasFocus('#rows')) {
@@ -1031,15 +1051,12 @@ $onMouseDown = function(e) {
 
 <div style="display:inline-block;position:relative;width:890px;margin-bottom:4px;">
 <span>
-CHAR:<input type="text" id="target-char" style="width:50px;" oninput="unicode.searchChar($el('#target-char').value);"><button class="small-button" onclick="unicode.searchChar($el('#target-char').value);" style="margin-left:2px;">SHOW</button>
-</span>
-
-<span style="margin-left:32px;">
-U+<input type="text" id="target-point" style="width:50px;"><button class="small-button" onclick="unicode.searchPoint($el('#target-point').value, 16);" style="margin-left:2px;">SHOW</button>
-</span>
-
-<span>
-U+<span style="font-size:0.7em;">(10)</span><input type="text" id="target-point10" style="width:50px;"><button class="small-button" onclick="unicode.searchPoint($el('#target-point10').value, 10);" style="margin-left:2px;">SHOW</button>
+U+<input type="text" id="target-point" style="width:50px;">
+<select>
+<option value="10">10</option>
+<option value="16" selected>16</option>
+</select>
+<button class="small-button" onclick="unicode.searchPoint($el('#target-point').value, 16);" style="margin-left:2px;">SHOW</button>
 </span>
 
 <span style="margin-left:40px;">
@@ -1047,6 +1064,7 @@ UTF-8:<input type="text" id="utf8" style="width:90px;"><button class="small-butt
 </span>
 
 <div style="display:inline-block;position:absolute;right:0;">
+  <span style="margin-right:8px;">Rows:<input type="text" id="rows" style="width:25px;" value="16"><button class="small-button" onclick="unicode.setRows($el('#rows').value);" style="margin-left:2px;">SHOW</button></span>
   <button onclick="unicode.showTable(unicode.prevPgPoint);" class="move-btn btn-half" id="prev-pg-btn">&#x2191;&#x2191;</button>
   <button onclick="unicode.showTable(unicode.prevRowPoint);" class="move-btn btn-half" id="prev-row-btn" style="margin-left:2px;">&#x2191;</button>
   <button onclick="unicode.showTable(unicode.nextRowPoint);" class="move-btn btn-half" id="next-row-btn">&#x2193;</button>
@@ -1060,9 +1078,6 @@ UTF-8:<input type="text" id="utf8" style="width:90px;"><button class="small-butt
     <div style="height:24px;">
       <span style="margin-left:10px;">
       Font-family:<input type="text" id="char-font" style="width:120px;" oninput="unicode.setFont($el('#char-font').value);" onchange="unicode.setFont($el('#char-font').value);">
-      </span>
-      <span style="position:absolute;right:0;">
-      Rows:<input type="text" id="rows" style="width:50px;" value="16"><button class="small-button" onclick="unicode.setRows($el('#rows').value);" style="margin-left:2px;">SHOW</button>
       </span>
     </div>
     <div>
@@ -1085,6 +1100,7 @@ UTF-8:<input type="text" id="utf8" style="width:90px;"><button class="small-butt
       <div style="margin-left:12px;line-height:1.3em;">
         <span id="led-u0000"></span><button onclick="unicode.showTable(0x0000);" class="codeblobk-btn">U+0000</button>ASCII<br>
         <span id="led-u0080"></span><button onclick="unicode.showTable(0x0080);" class="codeblobk-btn">U+0080</button>Latin-1 Supplement<br>
+        <span id="led-u0370"></span><button onclick="unicode.showTable(0x0370);" class="codeblobk-btn">U+0370</button>Ελληνική<br>
         <span id="led-u0400"></span><button onclick="unicode.showTable(0x0400);" class="codeblobk-btn">U+0400</button>Кириллица<br>
         <span id="led-u0600"></span><button onclick="unicode.showTable(0x0600);" class="codeblobk-btn">U+0600</button>عربی حروف تہجی<br>
         <span id="led-u0e00"></span><button onclick="unicode.showTable(0x0E00);" class="codeblobk-btn">U+0E00</button>อักษรไทย<br>
