@@ -379,7 +379,7 @@ unicode.currentStart = 0;
 unicode.target = null;
 unicode.rows = unicode.DFLT_ROWS;
 
-unicode.LED_IDS = ['bmp', 'smp', 'sip', 'tip', 'ssp', 'pua1', 'pua2', 'u0000', 'u0080', 'u0370', 'u0400', 'u0600', 'u0e00', 'u2000', 'u3040', 'u3100', 'u3400','uac00', 'ud800', 'ue000', 'uf900', 'ufe00', 'uff00', 'uff60', 'u1f300', 'ue0100'];
+unicode.LED_IDS = ['bmp', 'smp', 'sip', 'tip', 'ssp', 'pua1', 'pua2', 'u0000', 'u0370', 'u0400', 'u0600', 'u0e00', 'u2000', 'u3040', 'u3100', 'u3400','uac00', 'ud800', 'ue000', 'uf900', 'ufe00', 'uff00', 'uff60', 'u1f300', 'ue0100'];
 unicode.LEDs = {};
 
 $onLoad = function() {
@@ -620,8 +620,6 @@ unicode.updateLed = function(v) {
   ledId = '';
   if (unicode.inRange(v, 0x000, 0x007F)) {
     ledId = 'u0000';
-  } else if (unicode.inRange(v, 0x0080, 0x00FF)) {
-    ledId = 'u0080';
   } else if (unicode.inRange(v, 0x0370, 0x03FF)) {
     ledId = 'u0370';
   } else if (unicode.inRange(v, 0x0400, 0x052F)) {
@@ -1099,7 +1097,6 @@ UTF-8:<input type="text" id="utf8" style="width:90px;"><button class="small-butt
       <span id="led-bmp"></span><button onclick="unicode.showTable(0);" class="codeblobk-btn" data-tooltip="Basic Multilingual Plane">U+0000(BMP)</button><br>
       <div style="margin-left:12px;line-height:1.3em;">
         <span id="led-u0000"></span><button onclick="unicode.showTable(0x0000);" class="codeblobk-btn">U+0000</button>ASCII<br>
-        <span id="led-u0080"></span><button onclick="unicode.showTable(0x0080);" class="codeblobk-btn">U+0080</button>Latin-1 Supplement<br>
         <span id="led-u0370"></span><button onclick="unicode.showTable(0x0370);" class="codeblobk-btn">U+0370</button>Ελληνική<br>
         <span id="led-u0400"></span><button onclick="unicode.showTable(0x0400);" class="codeblobk-btn">U+0400</button>Кириллица<br>
         <span id="led-u0600"></span><button onclick="unicode.showTable(0x0600);" class="codeblobk-btn">U+0600</button>عربی حروف تہجی<br>
