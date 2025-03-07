@@ -254,6 +254,17 @@ td.unicode-body {
   font-size: 13px;
   font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
 }
+
+#unicodeescape {
+  width: 880px;
+  height: 45px;
+  border: none;
+  background: transparent;
+  color: #ccc;
+  font-size: 13px;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+  resize: none;
+}
 </style>
 <script>
 var unicode = {};
@@ -936,6 +947,31 @@ unicode._dumpUTF16Bytes = function(p, le) {
   return a;
 };
 
+unicode.getUnicodeEscape = function(s) {
+  var s = $el('#text').value;
+  var u = '';
+  for (var i = 0; i < s.length; i++) {
+    var c = s.substring(i, i + 1);
+    var p = unicode.ch2point(c);
+    if (p <= 127) {
+      u += c;
+    } else {
+      u += unicode._getUnicodeEscape(p);
+    }
+  }
+  $el('#unicodeescape').value = u;
+};
+unicode._getUnicodeEscape = function(p) {
+  var b = unicode.dumpUTF16Bytes(p);
+  b = b.replace(/ /g, '').toLowerCase();
+  if (b.length == 8) {
+    var u = '\\u' + b.substring(0, 2) + '\\u' + b.substring(2, 4);
+  } else {
+    u = '\\u' + b;
+  }
+  return u;
+};
+
 unicode.autoScrolling = false;
 unicode.autoDisp = function(ms) {
   if (ms == undefined) ms = 80;
@@ -991,6 +1027,7 @@ unicode.textareaListener = function(data) {
     unicode.showTable(null, point);
     unicode.updateLed(point);
   }
+  unicode.getUnicodeEscape();
 };
 
 unicode.onWheel = function(e) {
@@ -1080,6 +1117,9 @@ UTF-8:<input type="text" id="utf8" style="width:90px;"><button class="small-butt
     </div>
     <div>
       <textarea id="text" spellcheck="false"></textarea>
+    </div>
+    <div>
+      <textarea id="unicodeescape" spellcheck="false" readonly></textarea>
     </div>
   </div>
   <div style="display:inline-block;width:320px;">
