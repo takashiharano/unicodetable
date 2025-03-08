@@ -1023,7 +1023,11 @@ unicode.autoSeqBat = function(ms, startP) {
 
 unicode.textareaListener = function(data) {
   var point = data.codePoint;
-  if (point != undefined) {
+  if (point == undefined) {
+    unicode.showTable(null);
+    unicode.showDetails(-1);
+    unicode.updateLed(-1);
+  } else {
     unicode.showTable(null, point);
     unicode.updateLed(point);
   }
