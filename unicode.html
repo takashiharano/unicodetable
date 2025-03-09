@@ -59,13 +59,13 @@ textarea {
   vertical-align: middle;
   border: 1px solid #aaa;
   border-radius: 3px;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.075);
-  transition: border linear 0.1s, box-shadow linear 0.1s;
+  box-shadow: inset 0 1px 2px rgb(32 32 32 / .075);
+  transition: all ease .5s;
 }
 
 textarea:focus {
   border-color:#51a7e8;
-  box-shadow:inset 0 1px 2px rgba(0,0,0,0.075),0 0px 5px rgba(81,167,232,0.5);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / .075), 0 0px 5px rgb(81 167 232 / .5);
 }
 
 select {
@@ -233,7 +233,7 @@ td.unicode-body {
 
 #desc {
   position: relative;
-  margin-left:12px;
+  margin-left: 12px;
   font-size: 12px;
 }
 
@@ -264,6 +264,9 @@ td.unicode-body {
   font-size: 13px;
   font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
   resize: none;
+}
+#unicodeescape:focus {
+  box-shadow: none;
 }
 </style>
 <script>
