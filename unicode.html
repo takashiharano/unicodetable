@@ -82,11 +82,12 @@ button, input[type="button"], input[type="submit"] {
 }
 button:hover, input[type="button"]:hover, input[type="submit"]:hover {
   cursor: pointer;
-  background: #1d8eff;
   color: #fff;
+  background: #1d8eff;
   transition: all 0.2s ease;
 }
 button:disabled, input[type="button"]:disabled, input[type="submit"]:disabled {
+  color: #eee;
   background: #888;
 }
 
@@ -231,13 +232,15 @@ td.unicode-body {
   vertical-align: middle;
 }
 
-#desc {
+#cp-name {
   position: relative;
-  margin-left: 12px;
+  top: -8px;
+  height:10px;
   font-size: 12px;
 }
 
 #point-val {
+  margin-top: 12px;
   font-size: 14px;
 }
 
@@ -701,17 +704,16 @@ unicode.showDetails = function(point) {
   var utf16 = 'UTF-16:\n';
   utf16 += 'BE: ' + unicode.dumpUTF16Bytes(point) + '\n';
   utf16 += 'LE: ' + unicode.dumpUTF16Bytes(point, true);
-  var desc = '';
+  var cpname = '';
   var chClz = '';
   var pointDef = unicode.CTRL_CHRS[point];
   if (pointDef) {
     chClz = 'ctrl-char-l';
     if (pointDef.chr) ch = pointDef.chr;
-    desc = '<span id="desc" class="' + chClz + '">' + pointDef.desc + '</span>';
+    cpname = pointDef.desc;
   }
   var hex = util.lpad(pointHex, '0', 4);
   var codepoint = 'U+' + util.lpad(hex, '0', 4);
-  codepoint += desc;
   var pointVal = '';
   pointVal += 'HEX: ' + util.lpad(pointHex, '0', 2) + '\n';
   pointVal += 'DEC: ' + point + '\n';
@@ -724,13 +726,14 @@ unicode.showDetails = function(point) {
 
   $el('#char-wrapper').innerHTML = '<div id="char" class="' + chClz + '">' + ch + '</div>';
   $el('#codepoint').innerHTML = codepoint;
+  $el('#cp-name').innerHTML = cpname;
   $el('#point-val').innerHTML = pointVal;
 };
 
 unicode.clearDetail = function() {
   $el('#char-wrapper').innerHTML = '';
   $el('#codepoint').innerHTML = '';
-  $el('#desc').innerHTML = '';
+  $el('#cp-name').innerHTML = '';
   $el('#point-val').innerHTML = '';
 };
 
@@ -783,10 +786,12 @@ unicode.searchPointByUTF8 = function(v) {
 unicode.selectChar = function(point) {
   if (point == unicode.target) {
     unicode.clearChar();
+    $el('#copy-button').disabled = true;
   } else {
     unicode.showDetails(point);
     unicode.showTable(unicode.start, point);
     unicode.updateLed(point);
+    $el('#copy-button').disabled = false;
   }
 };
 
@@ -794,6 +799,16 @@ unicode.clearChar = function() {
   unicode.target = null;
   point = null;
   unicode.showTable(unicode.start, point);
+};
+
+unicode.copy = function() {
+  var p = unicode.target;
+  if (p === null) return;
+  try {
+    var s = String.fromCodePoint(p);
+    util.copy(s);
+    unicode.showInfotip('Copied');
+  } catch (e) {}
 };
 
 unicode.setRows = function(rows) {
@@ -877,7 +892,7 @@ unicode.setBtnStyle = function() {
 unicode.copyURL = function() {
   var url = unicode.getURL();
   util.copy(url);
-  util.infotip.show('The URL has been copied to clipboard.', 1500, {pos: 'pointer'});
+  unicode.showInfotip('The URL has been copied to clipboard.');
 };
 
 unicode.getUTF8bytes = function(a) {
@@ -1023,6 +1038,9 @@ unicode.autoSeqBat = function(ms, startP) {
   unicode.autoSeq = true;
 };
 
+unicode.showInfotip = function(s) {
+  util.infotip.show(s, 1500, {pos: 'pointer'});
+};
 
 unicode.textareaListener = function(data) {
   var point = data.codePoint;
@@ -1133,9 +1151,8 @@ UTF-8:<input type="text" id="utf8" style="width:90px;"><button class="small-butt
   <div style="display:inline-block;width:320px;">
     <div id="code-info">
     <pre style="width:100%;height:100%;">
-<span id="codepoint"></span>
-<div id="char-wrapper1"><div id="char-wrapper"></div></div>
-<span id="point-val"></span>
+<span id="codepoint"></span><span style="position:absolute;right:4px;"><button id="copy-button" onclick="unicode.copy();" disabled>Copy</button></span>
+<div id="char-wrapper1"><div id="char-wrapper"></div></div><div id="cp-name" class="ctrl-char-l"></div><div id="point-val"></div>
 </pre>
   </div>
   <div style="display:inline-block;margin-top:4px;line-height:1.3em;font-size:12px;">
