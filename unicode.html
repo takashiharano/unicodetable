@@ -164,7 +164,7 @@ td.unicode-body {
   color: #bdf;
 }
 
-.target {
+.ch-selected {
   background: #cfc !important;
 }
 
@@ -391,9 +391,9 @@ unicode.CTRL_CHRS = {
 };
 unicode.DFLT_ROWS = 16;
 unicode.ROWS_MAX = 1024;
-unicode.start = null;
+unicode.start = -1;
 unicode.currentStart = 0;
-unicode.target = null;
+unicode.targetPoint = -1;
 unicode.rows = unicode.DFLT_ROWS;
 
 unicode.LED_IDS = ['bmp', 'smp', 'sip', 'tip', 'ssp', 'pua1', 'pua2', 'u0000', 'u0370', 'u0400', 'u0600', 'u0e00', 'u2000', 'u3040', 'u3100', 'u3400','uac00', 'ud800', 'ue000', 'uf900', 'ufe00', 'uff00', 'uff60', 'u1f300', 'ue0100'];
@@ -411,7 +411,9 @@ $onLoad = function() {
   if (start != null) {
     start |= 0;
   }
-  if (point != null) {
+  if (point == null) {
+    point = -1;
+  } else {
     point |= 0;
     $el('#target-point').value = util.lpad(point, '0', 4);
   }
@@ -463,52 +465,44 @@ unicode.showTable = function(startPoint, targetPoint, targetCh, rows) {
     rows = $el('#rows').value;
   }
 
-  if (targetPoint !== undefined) {
-    var codePoint = targetPoint;
-    if (targetPoint) {
-      codePoint = util.toHex((targetPoint | 0), true);
-    }
+  if (targetCh != undefined) {
+    targetPoint = unicode.ch2point(targetCh);
+  }
+  if (targetPoint === undefined) {
+    targetPoint = -1;
   }
 
-  var target = null;
-  if ((targetPoint != undefined) && (targetPoint != null)) {
-    target = targetPoint;
-  }
-  if ((targetCh != undefined) && (targetCh != null)) {
-    target = unicode.ch2point(targetCh);
-  }
-  if (target != null) {
-    unicode.target = target;
-    unicode.showDetails(target);
-  } else if ((targetPoint == '') || (targetCh == '')) {
-    unicode.target = null;
+  unicode.targetPoint = targetPoint;
+
+  if (targetPoint != -1) {
+    unicode.showDetails(targetPoint);
   }
 
   var start = startPoint;
-  if ((target != undefined) && (target != null)) {
-    if ((start == undefined) || (start == null)) {
+  if (targetPoint != -1) {
+    if ((start == undefined) || (start == -1)) {
       if (rows < 16) {
-        start = target - (0x10 * Math.floor(rows / 2));
+        start = targetPoint - (0x10 * Math.floor(rows / 2));
       } else {
-        start = target - 0x70
+        start = targetPoint - 0x70
       }
     }
   }
 
   if (start < 0) start = 0;
-  if (target > 0) {
-    if (start <= target) {
-      if (target - start >= 256) {
-        start = target;
+  if (targetPoint > 0) {
+    if (start <= targetPoint) {
+      if (targetPoint - start >= 256) {
+        start = targetPoint;
       }
     } else {
-      if (start - target >= 256) {
-        start = target;
+      if (start - targetPoint >= 256) {
+        start = targetPoint;
       }
     }
   }
 
-  if ((startPoint == null) && (target != null) && (target >= 0) && (target <= 255)) {
+  if ((startPoint == -1) && (targetPoint != -1) && (targetPoint >= 0) && (targetPoint <= 255)) {
     start = 0;
   }
 
@@ -609,10 +603,10 @@ unicode.createTable = function(start, rows) {
       if (chClz) {
         clz += ' ' + chClz;
       }
-      if ((unicode.target != '') && (point == unicode.target)) {
-        clz += ' target';
+      if ((unicode.targetPoint != -1) && (point == unicode.targetPoint)) {
+        clz += ' ch-selected';
       }
-      html += '<td class="' + clz + '" data-tooltip="' + tooltip + '" ondblclick="unicode.selectChar(0x' + pointHex + ');" onmouseover="unicode.onHoverCh(0x' + pointHex + ');" onmouseout="unicode.onOutCh();">' + ch + '</td>';
+      html += '<td class="' + clz + '" data-tooltip="' + tooltip + '" ondblclick="unicode.toggleCharacterLock(0x' + pointHex + ');" onmouseover="unicode.onHoverCh(0x' + pointHex + ');" onmouseout="unicode.onOutCh();">' + ch + '</td>';
     }
     html += '</tr>';
     basePoint += 16;
@@ -680,13 +674,13 @@ unicode.inRange = function(v, s, e) {
 };
 
 unicode.onHoverCh = function(point) {
-  if (!unicode.target) {
+  if (unicode.targetPoint == -1) {
     unicode.showDetails(point);
     unicode.updateLed(point);
   }
 };
 unicode.onOutCh = function() {
-  if (!unicode.target) {
+  if (unicode.target == -1) {
     unicode.showDetails(-1);
     unicode.updateLed(-1);
   }
@@ -738,15 +732,10 @@ unicode.clearDetail = function() {
 };
 
 unicode.ch2point = function(ch) {
-  var point;
-  if (ch.codePointAt) {
-    point = ch.codePointAt(0);
-  } else {
-    point = ch.charCodeAt(0);
-  }
-  return point;
+  var p = (ch.codePointAt ? ch.codePointAt(0) : ch.charCodeAt(0));
+  if ((p === undefined) || isNaN(p)) p = -1;
+  return p;
 };
-
 
 unicode.showPoint = function(val, base) {
   unicode.searchPoint(val, base);
@@ -763,7 +752,7 @@ unicode.searchPoint = function(val, base) {
   } else {
     point = ('0x' + val) | 0;
   }
-  unicode.showTable(null, point);
+  unicode.showTable(-1, point);
 };
 
 unicode.searchPointByUTF8 = function(v) {
@@ -783,27 +772,36 @@ unicode.searchPointByUTF8 = function(v) {
   }
 };
 
-unicode.selectChar = function(point) {
-  if (point == unicode.target) {
-    unicode.clearChar();
-    $el('#copy-button').disabled = true;
+unicode.toggleCharacterLock = function(point) {
+  if (point == unicode.targetPoint) {
+    unicode.unlockSelectedCharacter();
   } else {
-    unicode.showDetails(point);
-    unicode.showTable(unicode.start, point);
-    unicode.updateLed(point);
-    $el('#copy-button').disabled = false;
+    unicode.lockSelectedCharacter(point);
   }
+}
+
+unicode.lockSelectedCharacter = function(point) {
+  unicode.showDetails(point);
+  unicode.showTable(unicode.start, point);
+  unicode.updateLed(point);
+  $el('#copy-button').disabled = false;
 };
 
+unicode.unlockSelectedCharacter = function() {
+  unicode.clearChar();
+  $el('#copy-button').disabled = true;
+};
+
+
 unicode.clearChar = function() {
-  unicode.target = null;
-  point = null;
+  unicode.targetPoint = -1;
+  point = -1;
   unicode.showTable(unicode.start, point);
 };
 
 unicode.copy = function() {
-  var p = unicode.target;
-  if (p === null) return;
+  var p = unicode.targetPoint;
+  if (p == -1) return;
   try {
     var s = String.fromCodePoint(p);
     util.copy(s);
@@ -812,7 +810,7 @@ unicode.copy = function() {
 };
 
 unicode.setRows = function(rows) {
-  unicode.showTable(unicode.start, unicode.target, null, rows);
+  unicode.showTable(unicode.start, unicode.targetPoint, null, rows);
 };
 
 unicode.setFont = function(font) {
@@ -832,9 +830,9 @@ unicode.getURL = function() {
   if (start) {
     start = util.toHex(start, true);
   }
-  var target = unicode.target;
-  if (target) {
-    target = util.toHex(unicode.target, true);
+  var target = unicode.targetPoint;
+  if (target != -1) {
+    target = util.toHex(unicode.targetPoint, true);
   }
   var rows = unicode.rows;
   var q = '';
@@ -1024,13 +1022,13 @@ unicode.startStopAutoSeq = function() {
   unicode.setBtnStyle();
 };
 unicode.autoSeqBat = function(ms, startP) {
-  if (startP == undefined) startP = unicode.target;
+  if (startP == undefined) startP = unicode.targetPoint;
   if (startP == null) startP = unicode.start;
   var buf = new dbg.TextBuffer();
   buf.add('@echo off');
   buf.add('${p} = ' + startP);
   buf.add('LOOP (');
-  buf.add('unicode.selectChar(${p})');
+  buf.add('unicode.toggleCharacterLock(${p})');
   buf.add('${p}++');
   buf.add('wait ' + ms);
   buf.add(')');
@@ -1045,12 +1043,12 @@ unicode.showInfotip = function(s) {
 unicode.textareaListener = function(data) {
   var point = data.codePoint;
   if (point == undefined) {
-    unicode.showTable(null);
+    unicode.showTable(-1);
     unicode.showDetails(-1);
     unicode.updateLed(-1);
     unicode.clearChar();
   } else {
-    unicode.showTable(null, point);
+    unicode.showTable(-1, point);
     unicode.updateLed(point);
   }
   unicode.getUnicodeEscape();
