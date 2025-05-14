@@ -396,7 +396,7 @@ unicode.currentStart = 0;
 unicode.targetPoint = -1;
 unicode.rows = unicode.DFLT_ROWS;
 
-unicode.LED_IDS = ['bmp', 'smp', 'sip', 'tip', 'ssp', 'pua1', 'pua2', 'u0000', 'u0370', 'u0400', 'u0600', 'u0e00', 'u2000', 'u3040', 'u3100', 'u3400','uac00', 'ud800', 'ue000', 'uf900', 'ufe00', 'uff00', 'uff60', 'u1f300', 'ue0100'];
+unicode.LED_IDS = ['bmp', 'smp', 'sip', 'tip', 'ssp', 'pua1', 'pua2', 'u0000', 'u0370', 'u0400', 'u0600', 'u0e00', 'u2000', 'u3040', 'u3100', 'u3400','uac00', 'ud800', 'ue000', 'uf900', 'ufe00', 'uff00', 'uff60', 'u1f300', 'ue0100', 'u10ffff'];
 unicode.LEDs = {};
 
 $onLoad = function() {
@@ -456,7 +456,7 @@ unicode.ledOff = function(id) {
 };
 
 unicode.showTable = function(startPoint, targetPoint, targetCh, rows) {
-  if (targetPoint >= unicode.MAX_POINT) {
+  if (targetPoint > unicode.MAX_POINT) {
     util.infotip.show('Out of range: U+' + targetPoint.toString(16) + ' (U+0000 - U+10FFFF)', 3000);
     return;
   }
@@ -665,6 +665,8 @@ unicode.updateLed = function(v) {
     ledId = 'u1f300';
   } else if (unicode.inRange(v, 0xE0100, 0xE01EF)) {
     ledId = 'ue0100';
+  } else if (unicode.inRange(v, 0x10FFFF, 0x10FFFF)) {
+    ledId = 'u10ffff';
   }
   if (ledId) unicode.ledOn(ledId);
 };
@@ -1184,12 +1186,16 @@ UTF-8:<input type="text" id="utf8" style="width:90px;"><button class="small-butt
       </div>
       <span id="led-sip"></span><button onclick="unicode.showTable(0x20000);" class="codeblobk-btn" data-tooltip="Supplementary Ideographic Plane">U+20000(SIP)</button><br>
       <span id="led-tip"></span><button onclick="unicode.showTable(0x30000);" class="codeblobk-btn" data-tooltip="Tertiary Ideographic Plane">U+30000(TIP)</button><br>
+      <span style="margin-left:50px;">:</span><br>
       <span id="led-ssp"></span><button onclick="unicode.showTable(0xE0000);" class="codeblobk-btn" data-tooltip="Supplementary Special‐purpose Plane">U+E0000(SSP)</button><br>
       <div style="margin-left:12px;line-height:1.3em;">
         <span id="led-ue0100"></span><button onclick="unicode.showTable(0xE0100);" class="codeblobk-btn">U+E0100</button>Variation Selectors<br>
       </div>
       <span id="led-pua1"></span><button onclick="unicode.showTable(0xF0000);" class="codeblobk-btn" data-tooltip="Private Use Area">U+F0000(PUA)</button><br>
       <span id="led-pua2"></span><button onclick="unicode.showTable(0x100000);" class="codeblobk-btn" data-tooltip="Private Use Area">U+100000(PUA)</button><br>
+      <div style="margin-left:12px;line-height:1.3em;">
+        <span id="led-u10ffff"></span><button onclick="unicode.showTable(0x10FFFF);" class="codeblobk-btn">U+10FFFF</button>End of Unicode<br>
+      </div>
     </td>
     </tr>
     </table>
