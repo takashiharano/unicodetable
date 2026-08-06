@@ -9,7 +9,7 @@
 <!--
 Unicode Table
 Copyright 2020 Takashi Harano
-Released under the MIT license
+Released under the MIT License
 -->
 <script src="./libs/debug.js"></script>
 <script src="./libs/util.js"></script>
@@ -396,7 +396,7 @@ unicode.currentStart = 0;
 unicode.targetPoint = -1;
 unicode.rows = unicode.DFLT_ROWS;
 
-unicode.LED_IDS = ['bmp', 'smp', 'sip', 'tip', 'ssp', 'pua1', 'pua2', 'u0000', 'u0370', 'u0400', 'u0600', 'u0e00', 'u2000', 'u3040', 'u3100', 'u3400','uac00', 'ud800', 'ue000', 'uf900', 'ufe00', 'uff00', 'uff60', 'u1f300', 'ue0100', 'u10ffff'];
+unicode.LED_IDS = ['bmp', 'smp', 'sip', 'tip', 'ssp', 'pua1', 'pua2', 'u0000', 'u0370', 'u0400', 'u0600', 'u0e00', 'u2000', 'u3040', 'u3100', 'u3400','uac00', 'ud800', 'ue000', 'uf900', 'ufe00', 'uff00', 'uff60', 'u1f300', 'ue0100', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10', 'p11', 'p12', 'p13', 'u10ffff'];
 unicode.LEDs = {};
 
 $onLoad = function() {
@@ -623,6 +623,16 @@ unicode.updateLed = function(v) {
   if (v >= 0x10000) ledId = 'smp';
   if (v >= 0x20000) ledId = 'sip';
   if (v >= 0x30000) ledId = 'tip';
+  if (v >= 0x40000) ledId = 'p4';
+  if (v >= 0x50000) ledId = 'p5';
+  if (v >= 0x60000) ledId = 'p6';
+  if (v >= 0x70000) ledId = 'p7';
+  if (v >= 0x80000) ledId = 'p8';
+  if (v >= 0x90000) ledId = 'p9';
+  if (v >= 0xA0000) ledId = 'p10';
+  if (v >= 0xB0000) ledId = 'p11';
+  if (v >= 0xC0000) ledId = 'p12';
+  if (v >= 0xD0000) ledId = 'p13';
   if (v >= 0xE0000) ledId = 'ssp';
   if (v >= 0xF0000) ledId = 'pua1';
   if (v >= 0x100000) ledId = 'pua2';
@@ -1186,7 +1196,16 @@ UTF-8:<input type="text" id="utf8" style="width:90px;"><button class="small-butt
       </div>
       <span id="led-sip"></span><button onclick="unicode.showTable(0x20000);" class="codeblobk-btn" data-tooltip="Supplementary Ideographic Plane">U+20000(SIP)</button><br>
       <span id="led-tip"></span><button onclick="unicode.showTable(0x30000);" class="codeblobk-btn" data-tooltip="Tertiary Ideographic Plane">U+30000(TIP)</button><br>
-      <span style="margin-left:50px;">:</span><br>
+      <span id="led-p4"></span><button onclick="unicode.showTable(0x40000);" class="codeblobk-btn" data-tooltip="Plane 4">U+40000</button><br>
+      <span id="led-p5"></span><button onclick="unicode.showTable(0x50000);" class="codeblobk-btn" data-tooltip="Plane 5">U+50000</button><br>
+      <span id="led-p6"></span><button onclick="unicode.showTable(0x60000);" class="codeblobk-btn" data-tooltip="Plane 6">U+60000</button><br>
+      <span id="led-p7"></span><button onclick="unicode.showTable(0x70000);" class="codeblobk-btn" data-tooltip="Plane 7">U+70000</button><br>
+      <span id="led-p8"></span><button onclick="unicode.showTable(0x80000);" class="codeblobk-btn" data-tooltip="Plane 8">U+80000</button><br>
+      <span id="led-p9"></span><button onclick="unicode.showTable(0x90000);" class="codeblobk-btn" data-tooltip="Plane 9">U+90000</button><br>
+      <span id="led-p10"></span><button onclick="unicode.showTable(0xA0000);" class="codeblobk-btn" data-tooltip="Plane 10">U+A0000</button><br>
+      <span id="led-p11"></span><button onclick="unicode.showTable(0xB0000);" class="codeblobk-btn" data-tooltip="Plane 11">U+B0000</button><br>
+      <span id="led-p12"></span><button onclick="unicode.showTable(0xC0000);" class="codeblobk-btn" data-tooltip="Plane 12">U+C0000</button><br>
+      <span id="led-p13"></span><button onclick="unicode.showTable(0xD0000);" class="codeblobk-btn" data-tooltip="Plane 13">U+D0000</button><br>
       <span id="led-ssp"></span><button onclick="unicode.showTable(0xE0000);" class="codeblobk-btn" data-tooltip="Supplementary Special‐purpose Plane">U+E0000(SSP)</button><br>
       <div style="margin-left:12px;line-height:1.3em;">
         <span id="led-ue0100"></span><button onclick="unicode.showTable(0xE0100);" class="codeblobk-btn">U+E0100</button>Variation Selectors<br>
